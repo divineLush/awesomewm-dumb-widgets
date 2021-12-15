@@ -22,7 +22,7 @@ local function set_widget()
             val = 1
         end
 
-        text:set_text("mi: "..val)
+        text:set_text("mi:"..val)
     end)
 end
 

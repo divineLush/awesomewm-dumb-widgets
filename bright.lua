@@ -17,7 +17,7 @@ local function set_widget()
     awful.spawn.easy_async("light", function(out)
         local raw_val = string.sub(out, 1, -2)
         local num_val = math.floor(tonumber(raw_val))
-        text:set_text("br: "..num_val)
+        text:set_text("br:"..num_val)
     end)
 end
 

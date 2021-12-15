@@ -18,16 +18,20 @@ widget:set_widget(text)
 
 local function set_widget()
     awful.spawn.easy_async("amixer", function(out)
-        local substr = string.match(out, "Master.*%[%d%d%%]")
-        local val = string.match(substr, "%[%d%d%%%]")
+        local substr = string.match(out, "Master.*%[%d*%%%]")
+        local val = string.match(substr, "%[%d*%%%]")
         local raw_val = string.sub(val, 2, -3)
 
-        local is_100 = string.find(out, "Master.*%[100%%%]") ~= nil
-        if is_100 then
-            raw_val = "100"
+        local muted_substr = string.match(out, "Master.*%[%l*%]")
+        local muted_val = string.match(muted_substr, "%[%l*%]")
+        local raw_muted = string.find(muted_val, "off") ~= nil
+
+        local msg_muted = ''
+        if raw_muted then
+            msg_muted = 'm'
         end
 
-        text:set_text("vo: "..raw_val)
+        text:set_text("vo:"..raw_val..msg_muted)
     end)
 end
 
