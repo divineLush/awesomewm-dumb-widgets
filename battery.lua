@@ -3,40 +3,43 @@
 -------------------------------------------------
 
 local wibox = require("wibox")
-local watch = require("awful.widget.watch")
-local beautiful = require("beautiful")
+local awful = require("awful")
+local gears = require("gears")
 
 local text = wibox.widget{
-    font = 'Hack 12',
+    font = 'Iosevka Fixed 12',
     widget = wibox.widget.textbox,
 }
 
 local widget = wibox.widget.background()
 widget:set_widget(text)
 
-watch("acpi -b", 10, function(widget, stdout, stderr, exitreason, exitcode)
-        local perc = string.match(stdout, "%d%d%%")
-        local val = string.sub(perc, 1, -2)
-        local is_100 = string.find(stdout, "100%%") ~= nil
+gears.timer {
+    timeout = 20,
+    autostart = true,
+    call_now = true,
+    callback = function()
+        awful.spawn.easy_async_with_shell("cat /sys/class/power_supply/BAT*/uevent", function(out)
+            local capacity_raw = string.match(out, "POWER_SUPPLY_CAPACITY=%d*")
+            local capacity = string.sub(string.match(capacity_raw, "=%d*"), 2)
 
-        if is_100 then
-            val = "100"
-        end
+            local status_raw = string.match(out, "POWER_SUPPLY_STATUS=%u")
+            local status_stripped = string.match(status_raw, "=%u")
+            local status_letter = string.match(status_stripped, "%u"):lower()
 
-        local msg = "ba:"..val
-        text:set_text(msg)
+            text:set_text("ba:"..capacity..status_letter)
 
-        local not_charging = string.find(stdout, "Charging") == nil
-        local is_bat_low = tonumber(val) < 21
-        local color = "#c6c8d1"
+            local not_charging = status_letter == "d"
+            local is_bat_low = tonumber(capacity) < 21
+            local color = "#c6c8d1"
 
-        if (not_charging) and (is_bat_low) then
-            color = "#e98989"
-        end
+            if (not_charging) and (is_bat_low) then
+                color = "#e98989"
+            end
 
-        widget:set_fg(color)
-    end,
-    widget
-    )
+            widget:set_fg(color)
+        end)
+    end
+}
 
 return widget
