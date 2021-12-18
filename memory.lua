@@ -4,9 +4,10 @@
 
 local wibox = require("wibox")
 local watch = require("awful.widget.watch")
+local beautiful = require("beautiful")
 
 local text = wibox.widget{
-    font = "Hack 12",
+    font = tostring(beautiful.get().font),
     widget = wibox.widget.textbox,
 }
 
